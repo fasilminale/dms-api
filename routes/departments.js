@@ -43,7 +43,43 @@ router.post("/", async (req, res) => {
     children: req.body.children,
     parent: req.body.parent,
   });
+
   await department.save();
+
+  // Updating parent children
+
+  if (req.body.parent) {
+    const parent = await Department.findById(req.body.parent);
+
+    await Department.findByIdAndUpdate(
+      req.body.parent,
+      {
+        children: parent.children
+          ? [...parent.children, department._id.toHexString()]
+          : [department._id.toHexString()],
+      },
+      {
+        new: true,
+      }
+    );
+  }
+
+  // update child parent
+
+  if (req.body.children && req.body.children.length > 0) {
+    const ids = req.body.children.map((id) => id);
+
+    await Department.updateMany(
+      {
+        _id: {
+          $in: ids,
+        },
+      },
+      {
+        $set: { parent: req.params.id },
+      }
+    );
+  }
 
   res.send(department);
 });
@@ -75,23 +111,38 @@ router.put("/:id", async (req, res) => {
     new: true,
   });
 
-  //   updating children parent
+  // Updating parent children
+
+  if (req.body.parent) {
+    const parent = await Department.findById(req.body.parent);
+    await Department.findByIdAndUpdate(
+      req.body.parent,
+      {
+        children: parent.children
+          ? [...parent.children, department._id.toHexString()]
+          : [department._id.toHexString()],
+      },
+      {
+        new: true,
+      }
+    );
+  }
+
+  // update child parent
 
   if (req.body.children && req.body.children.length > 0) {
-    for (let child of req.body.children) {
-      const childDepartment = await Department.findById(child);
-      await Department.findByIdAndUpdate(
-        child,
-        {
-          name: childDepartment.name,
-          description: childDepartment.description,
-          parent: req.params.id,
+    const ids = req.body.children.map((id) => id);
+
+    await Department.updateMany(
+      {
+        _id: {
+          $in: ids,
         },
-        {
-          new: true,
-        }
-      );
-    }
+      },
+      {
+        $set: { parent: req.params.id },
+      }
+    );
   }
 
   if (!department)

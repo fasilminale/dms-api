@@ -8,8 +8,11 @@ const departments = require("./routes/departments");
 const express = require("express");
 const app = express();
 
+const deployedUrl =
+  "mongodb+srv://dms-user:dms1234@cluster0.kd8l7.mongodb.net/dms";
+const localUrl = "mongodb://localhost/departments";
 mongoose
-  .connect("mongodb+srv://dms-user:dms1234@cluster0.kd8l7.mongodb.net/dms")
+  .connect(deployedUrl)
   .then(() => console.log("Connected to MongoDB..."))
   .catch((err) => console.error("Could not connect to MongoDB..."));
 
